@@ -38,7 +38,7 @@ export function createLocalBankrollRepository(): BankrollRepository {
     async saveWithdrawals(withdrawals) {
       safeWrite(STORAGE_KEYS.withdrawals, withdrawals);
     },
-    async loadTheme(defaultTheme: ThemeMode = 'light') {
+    async loadTheme(defaultTheme: ThemeMode = 'dark') {
       try {
         const raw = window.localStorage.getItem(STORAGE_KEYS.theme);
         return raw === 'dark' || raw === 'light' ? raw : defaultTheme;

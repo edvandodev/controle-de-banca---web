@@ -121,7 +121,7 @@ export default function App() {
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [isFirstDailyVisit, setIsFirstDailyVisit] = useState(false);
 
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [theme, setTheme] = useState<ThemeMode>('dark');
   const isRepositoryHydrated = hydratedRepositoryId === repositoryId;
 
   useEffect(() => {
@@ -165,7 +165,7 @@ export default function App() {
       setIsDataLoading(true);
       setHydratedRepositoryId(null);
 
-      const fallbackTheme = await localRepository.loadTheme('light');
+      const fallbackTheme = await localRepository.loadTheme('dark');
       const fallbackEntries = await localRepository.loadEntries(EMPTY_ENTRIES);
       const fallbackWithdrawals = await localRepository.loadWithdrawals(EMPTY_WITHDRAWALS);
 

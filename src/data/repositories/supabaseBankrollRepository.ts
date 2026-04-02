@@ -191,7 +191,7 @@ export function createSupabaseBankrollRepository(userId: string): BankrollReposi
       }
     },
 
-    async loadTheme(defaultTheme: ThemeMode = 'light') {
+    async loadTheme(defaultTheme: ThemeMode = 'dark') {
       const { data, error } = await client
         .from('user_preferences')
         .select('user_id, theme')
