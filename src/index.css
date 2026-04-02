@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-2: #f9fafb;
+    --navbar: #0b0b0c;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #f97316;
+    --accent-hover: #ea580c;
+    --positive: #16a34a;
+    --negative: #dc2626;
+    --shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  [data-theme='dark'] {
+    --bg: #0b0b0c;
+    --surface: #121212;
+    --surface-2: #1a1a1a;
+    --navbar: #050505;
+    --text: #f9fafb;
+    --text-muted: #a1a1aa;
+    --border: rgba(255,255,255,0.08);
+    --accent: #f97316;
+    --accent-hover: #fb923c;
+    --positive: #22c55e;
+    --negative: #ef4444;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+
+  body {
+    @apply bg-[var(--bg)] text-[var(--text)] antialiased font-sans transition-colors duration-300;
+  }
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-brand-500: var(--accent);
+  --color-brand-600: var(--accent-hover);
+  
+  --color-premium-text: var(--text);
+  --color-premium-muted: var(--text-muted);
+  --color-premium-bg: var(--bg);
+  --color-premium-surface: var(--surface);
+  --color-premium-border: var(--border);
+  
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  
+  --color-nav-bg: var(--navbar);
+}
+
+.premium-card {
+  @apply bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow)] rounded-2xl transition-all duration-500 relative;
+}
+
+.premium-card:hover {
+  @apply shadow-2xl border-brand-500/20;
+  transform: translateY(-2px);
+}
+
+.premium-glow {
+  @apply relative;
+}
+
+.premium-glow::after {
+  content: '';
+  @apply absolute -inset-[1px] bg-gradient-to-r from-brand-500/0 via-brand-500/20 to-brand-500/0 rounded-2xl opacity-0 transition-opacity duration-500 pointer-events-none;
+}
+
+.premium-glow:hover::after {
+  @apply opacity-100;
+}
+
+.nav-link {
+  @apply px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200;
+}
+
+.nav-link-active {
+  @apply bg-[var(--accent)] text-white shadow-lg shadow-brand-500/30;
+}
+
+.nav-link-inactive {
+  @apply text-slate-400 hover:text-white hover:bg-white/10;
+}
+
+input, textarea, select {
+  @apply bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all;
+}
+
+button.primary {
+  @apply bg-[var(--accent)] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[var(--accent-hover)] shadow-lg shadow-brand-500/20 active:scale-95 transition-all;
+}
+
+button.secondary {
+  @apply bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[var(--surface-2)] active:scale-95 transition-all;
+}
+
