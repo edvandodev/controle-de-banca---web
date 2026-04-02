@@ -67,6 +67,9 @@ const DEFAULT_WITHDRAWALS: Withdrawal[] = [
   { id: 'w4', amount: 300, date: '2026-03-01T10:00:00Z', notes: 'Saque inicial' },
 ];
 
+const EMPTY_ENTRIES: Entry[] = [];
+const EMPTY_WITHDRAWALS: Withdrawal[] = [];
+
 const currencyInputFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
@@ -102,8 +105,8 @@ export default function App() {
     [session?.user.id],
   );
 
-  const [entries, setEntries] = useState<Entry[]>(MOCK_DATA);
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(DEFAULT_WITHDRAWALS);
+  const [entries, setEntries] = useState<Entry[]>(EMPTY_ENTRIES);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(EMPTY_WITHDRAWALS);
   
   const [activeTab, setActiveTab] = useState<'dashboard' | 'history' | 'reports'>('dashboard');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -163,8 +166,8 @@ export default function App() {
       setHydratedRepositoryId(null);
 
       const fallbackTheme = await localRepository.loadTheme('light');
-      const fallbackEntries = await localRepository.loadEntries(MOCK_DATA);
-      const fallbackWithdrawals = await localRepository.loadWithdrawals(DEFAULT_WITHDRAWALS);
+      const fallbackEntries = await localRepository.loadEntries(EMPTY_ENTRIES);
+      const fallbackWithdrawals = await localRepository.loadWithdrawals(EMPTY_WITHDRAWALS);
 
       const [loadedEntries, loadedWithdrawals, loadedTheme] = await Promise.all([
         bankrollRepository.loadEntries(fallbackEntries),
