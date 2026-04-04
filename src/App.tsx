@@ -42,6 +42,7 @@ import { ptBR } from 'date-fns/locale';
 import { Entry, DashboardStats, FilterPeriod, ThemeMode, Withdrawal } from './types';
 import { AuthScreen } from './components/auth/AuthScreen';
 import { HistorySection } from './components/history/HistorySection';
+import { getDashboardStats } from './lib/dashboard';
 import { cn, formatCurrency, formatPercent, formatDate } from './lib/utils';
 import { getDuplicateEntryDraft } from './lib/history';
 import { createBankrollRepository } from './data/repositories';
@@ -272,57 +273,7 @@ export default function App() {
   }, [entries, todayStr]);
 
   const precomputedStats: DashboardStats = useMemo(() => {
-    const relevant = precomputedFilteredEntries;
-    if (relevant.length === 0) return {
-      todayInitial: 0, todayFinal: 0, todayResult: 0, todayPercentage: 0,
-      todayGoal: 0,
-      totalAccumulated: 0, winDays: 0, lossDays: 0, bestDay: 0, worstDay: 0,
-      averageDaily: 0, winRate: 0, currentStreak: 0,
-      totalWithdrawn: 0,
-      lastWithdrawal: 0,
-      lastWithdrawalDate: new Date().toISOString(),
-      withdrawalsCount: 0,
-      averageWithdrawal: 0
-    };
-
-    const today = relevant.find(e => isSameDay(parseISO(e.date), new Date()));
-    const totalResult = relevant.reduce((acc, curr) => acc + curr.result, 0);
-    const wins = relevant.filter(e => e.result > 0).length;
-    const losses = relevant.filter(e => e.result < 0).length;
-    const best = Math.max(...relevant.map(e => e.result));
-    const worst = Math.min(...relevant.map(e => e.result));
-
-    let streak = 0;
-    const sortedByDate = [...relevant].sort((a, b) => b.date.localeCompare(a.date));
-    for (const e of sortedByDate) {
-      if (e.result > 0) streak++;
-      else if (e.result < 0) break;
-    }
-
-    const totalWithdrawn = withdrawals.reduce((acc, curr) => acc + curr.amount, 0);
-    const sortedWithdrawals = [...withdrawals].sort((a, b) => b.date.localeCompare(a.date));
-    const lastWithdrawal = sortedWithdrawals[0];
-
-    return {
-      todayInitial: today?.initialBalance || 0,
-      todayFinal: today?.finalBalance || 0,
-      todayResult: today?.result || 0,
-      todayPercentage: today?.percentage || 0,
-      todayGoal: today?.dailyGoal || 0,
-      totalAccumulated: totalResult,
-      winDays: wins,
-      lossDays: losses,
-      bestDay: best,
-      worstDay: worst,
-      averageDaily: totalResult / (relevant.length || 1),
-      winRate: (wins / (relevant.length || 1)) * 100,
-      currentStreak: streak,
-      totalWithdrawn: totalWithdrawn,
-      lastWithdrawal: lastWithdrawal?.amount || 0,
-      lastWithdrawalDate: lastWithdrawal?.date || new Date().toISOString(),
-      withdrawalsCount: withdrawals.length,
-      averageWithdrawal: withdrawals.length > 0 ? totalWithdrawn / withdrawals.length : 0
-    };
+    return getDashboardStats(precomputedFilteredEntries, withdrawals);
   }, [precomputedFilteredEntries, withdrawals]);
 
   if (isAuthLoading) {
@@ -1039,8 +990,8 @@ export default function App() {
                     
                     <div className="flex items-center justify-between mb-5">
                       <div>
-                        <h3 className="font-bold text-sm text-premium-text tracking-tight">Resumo Geral</h3>
-                        <p className="text-[10px] text-premium-muted">Métricas de consistência</p>
+                        <h3 className="font-bold text-sm text-premium-text tracking-tight">Resumo de Desempenho</h3>
+                        <p className="text-[10px] text-premium-muted">Indicadores financeiros do seu desempenho</p>
                       </div>
                       <div className="w-8 h-8 bg-brand-500/10 rounded-lg flex items-center justify-center text-brand-500">
                         <Activity size={16} />
@@ -1048,24 +999,36 @@ export default function App() {
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3 mb-6">
-                      <div className="p-3 bg-premium-surface rounded-xl border border-premium-border shadow-inner group hover:border-positive/30 transition-colors">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Melhor Dia</p>
-                        <p className="text-sm font-black text-positive">{formatCurrency(stats.bestDay)}</p>
+                      <div className="p-4 bg-premium-surface rounded-xl border border-premium-border shadow-inner group hover:border-positive/30 transition-colors min-h-[112px] flex flex-col justify-between">
+                        <div className="space-y-1.5">
+                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Melhor dia</p>
+                          <p className={cn('text-lg sm:text-xl font-black tracking-tight', stats.bestDay > 0 ? 'text-positive' : 'text-premium-text')}>{formatCurrency(stats.bestDay)}</p>
+                        </div>
+                        <p className="text-[10px] leading-relaxed text-premium-muted">Maior resultado diário no período</p>
                       </div>
 
-                      <div className="p-3 bg-premium-surface rounded-xl border border-premium-border shadow-inner group hover:border-negative/30 transition-colors">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Pior Dia</p>
-                        <p className="text-sm font-black text-negative">{formatCurrency(stats.worstDay)}</p>
+                      <div className="p-4 bg-premium-surface rounded-xl border border-premium-border shadow-inner group hover:border-negative/30 transition-colors min-h-[112px] flex flex-col justify-between">
+                        <div className="space-y-1.5">
+                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pior dia</p>
+                          <p className={cn('text-lg sm:text-xl font-black tracking-tight', stats.worstDay < 0 ? 'text-negative' : 'text-premium-text')}>{formatCurrency(stats.worstDay)}</p>
+                        </div>
+                        <p className="text-[10px] leading-relaxed text-premium-muted">Menor resultado diário no período</p>
                       </div>
 
-                      <div className="p-3 bg-premium-surface rounded-xl border border-premium-border shadow-inner">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Taxa de Acerto</p>
-                        <p className="text-sm font-black text-brand-500">{stats.winRate.toFixed(1)}%</p>
+                      <div className="p-4 bg-premium-surface rounded-xl border border-premium-border shadow-inner group hover:border-brand-500/30 transition-colors min-h-[112px] flex flex-col justify-between">
+                        <div className="space-y-1.5">
+                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Média por dia</p>
+                          <p className={cn('text-lg sm:text-xl font-black tracking-tight', stats.averageDaily > 0 ? 'text-positive' : stats.averageDaily < 0 ? 'text-negative' : 'text-premium-text')}>{formatCurrency(stats.averageDaily)}</p>
+                        </div>
+                        <p className="text-[10px] leading-relaxed text-premium-muted">Média dos resultados registrados</p>
                       </div>
 
-                      <div className="p-3 bg-premium-surface rounded-xl border border-premium-border shadow-inner">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Sequência</p>
-                        <p className="text-sm font-black text-premium-text">{stats.currentStreak} dias</p>
+                      <div className="p-4 bg-premium-surface rounded-xl border border-brand-500/15 shadow-inner group hover:border-brand-500/35 transition-colors min-h-[112px] flex flex-col justify-between">
+                        <div className="space-y-1.5">
+                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Sequência Positiva</p>
+                          <p className="text-lg sm:text-xl font-black tracking-tight text-brand-500">{stats.currentStreak} dias</p>
+                        </div>
+                        <p className="text-[10px] leading-relaxed text-premium-muted">Dias seguidos com resultado positivo</p>
                       </div>
                     </div>
 
